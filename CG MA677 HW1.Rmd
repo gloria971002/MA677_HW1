@@ -1,0 +1,75 @@
+---
+title: "MA677_HW1"
+author: "Chun Gao"
+date: "2/10/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+pacman::p_load(ggplot2)
+```
+
+## Introduction
+####  In Chapter 2 of G&S, Example 3.11 uses the binomial distribution to demonstrate the logic of hypothesis testing with a simple example. In this report, I will produce an explanation of the example showing how the authors reached their conclusion that the critical value should be between 69 and 73 people cured. Replicate and explain Figure 3.7.
+
+
+## Explanination 
+
+####  In the testing effectiveness of the new aspirin case, we have null hypothesis H0: p = 0.6 and alternate hypothesis H1: p > 0,6. Besides, for the α(p) \[\alpha \left ( p \right )= \sum_{m}^{n}b(n,p,k)\], which is the probability rejecting the H0, we know that α(0.6) is the probability of a type 1 error. The likelihood of a type 1 error is expected to be reduced, and according to the material, we know that we should find he critical number m to make sure that type 1 error has probability less than 5%. That is $\alpha_{0.6}\left ( m \right ) < 0.05$.
+  
+```{r}
+PowerCurve <- function(p,m){
+  sum <- 0
+  for (i in m:100) 
+    sum = sum + dbinom(i, 100, p)
+  return(sum)
+}
+PowerCurve(0.6,68)
+PowerCurve(0.6,69)
+PowerCurve(0.6,70)
+```
+ 
+ By calculation, we know that
+   when m = 68, $\alpha_{0.6}\left ( m \right )$ = 0.06150391,
+   when m = 69, $\alpha_{0.6}\left ( m \right )$ = 0.03984788,
+   when m = 70, $\alpha_{0.6}\left ( m \right )$ = 0.02478282.
+   
+#### Therefore, to satisfy the requirement $\alpha_{0.6}\left ( m \right ) < 0.05$, m should be 69.
+
+####  Similarly, we want to ensure that type 2 error $\beta_{0.8}\left ( m \right ) < 0.05$, which means $1-\alpha_{0.8}\left ( m \right ) < 0.05$. In other word, we should find m that $\alpha_{0.8}\left ( m \right ) >0.95$.
+  
+```{r}
+PowerCurve(0.8,72)
+PowerCurve(0.8,73)
+PowerCurve(0.8,74)
+```
+ 
+ By calculation, we know that
+   when m = 72, $\alpha_{0.8}\left ( m \right )$ = 0.9799798,
+   when m = 73, $\alpha_{0.8}\left ( m \right )$ = 0.9658484,
+   when m = 74, $\alpha_{0.8}\left ( m \right )$ = 0.9441673.
+   
+####  Therefore, to satisfy the requirement $\beta_{0.8}\left ( m \right ) < 0.05$, m should be 73.
+
+
+## Reproducing Figure 3.7
+```{r}
+x <- seq(.4, 1, .005)
+y1 <- PowerCurve(x, 69)
+y2 <- PowerCurve(x, 73)
+
+ggplot() + 
+  geom_line(mapping = aes(x = x, y = y1), col="dark green") + 
+  geom_line(mapping = aes(x = x, y = y2), col="dark red") + 
+  scale_x_continuous(limits = c(0.4, 1), breaks = seq(0.4, 1, .1), minor_breaks = NULL) + 
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, .1), minor_breaks = NULL) + 
+  xlab("p") + 
+  ylab("alpha(p)") + 
+  geom_segment(aes(x = 0.6, y = 0.95, xend = 0.8, yend = 0.95), col="orange") + 
+  geom_segment(aes(x = 0.6, y = 0.05, xend = 0.8, yend = 0.05), col="orange") + 
+  geom_segment(aes(x = 0.6, y = 0.05, xend = 0.6, yend = 0.95), col="orange") + 
+  geom_segment(aes(x = 0.8, y = 0.05, xend = 0.8, yend = 0.95), col="orange")
+## The figure coding is inspired by Li Rong
+```
+
